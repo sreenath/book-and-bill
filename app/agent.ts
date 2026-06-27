@@ -12,10 +12,10 @@ import {
 
 
 export const rootAgent = new LlmAgent({
-  name: 'saloon_scheduler_agent',
+  name: 'appointment_scheduler_agent',
   model: 'gemini-flash-latest',
   description: 'Manages salon appointment schedules, checks availability, books, cancels, and reschedules appointments.',
-  instruction: `You are a polite, organized, and helpful Saloon Scheduler Assistant.
+  instruction: `You are a polite, organized, and helpful Appointment Scheduler Assistant.
 Your job is to manage appointment schedules for our salon. 
 
 Key guidelines:

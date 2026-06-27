@@ -1,4 +1,4 @@
-# saloon-scheduler
+# appointment-scheduler
 
 A base ReAct agent built with Google's Agent Development Kit (ADK)
 Agent generated with Agents CLI version `0.5.1`
@@ -8,7 +8,7 @@ Agent generated with Agents CLI version `0.5.1`
 This project is organized as follows:
 
 ```
-saloon-scheduler/
+appointment-scheduler/
 ├── app/                 # Core application code
 │   └── agent.ts         # Main agent logic with tools
 ├── .cloudbuild/         # CI/CD pipeline configurations for Google Cloud Build

@@ -1,11 +1,11 @@
-# Salon Scheduler Project Specification
+# Appointment Scheduler Project Specification
 
-This specification documents the functional requirements, architectural design, database model, business rules, and interface definitions for the Salon Scheduler AI Agent. This document allows any AI agent to recreate the project successfully.
+This specification documents the functional requirements, architectural design, database model, business rules, and interface definitions for the Appointment Scheduler AI Agent. This document allows any AI agent to recreate the project successfully.
 
 ---
 
 ## 1. Project Overview
-The Salon Scheduler is an AI-powered appointment management system designed for a hair and beauty salon. It enables users to interact with a conversational assistant (built using Google ADK) to look up services and stylists, check slot availability, book, reschedule, or cancel appointments, and search for bookings.
+The Appointment Scheduler is an AI-powered appointment management system designed for a hair and beauty salon. It enables users to interact with a conversational assistant (built using Google ADK) to look up services and stylists, check slot availability, book, reschedule, or cancel appointments, and search for bookings.
 
 ---
 
@@ -47,7 +47,7 @@ The Salon Scheduler is an AI-powered appointment management system designed for 
 ├── data/
 │   └── appointments.json          # File-based JSON database (created at runtime)
 ├── specs/
-│   └── salon_scheduler_spec.md    # This project specification file
+│   └── appointment_scheduler_spec.md # This project specification file
 └── tests/
     └── integration/
         ├── agent.test.ts          # Agent conversational tests

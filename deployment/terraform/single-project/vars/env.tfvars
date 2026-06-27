@@ -1,5 +1,5 @@
 # Project name used for resource naming
-project_name = "saloon-scheduler"
+project_name = "appointment-scheduler"
 
 # Your Google Cloud project id
 project_id = "your-gcp-project-id"

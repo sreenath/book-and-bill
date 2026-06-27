@@ -1,4 +1,4 @@
-name: "saloon-scheduler"
+name: "appointment-scheduler"
 acli_version: "0.5.1"
 agent_directory: "app"
 region: "us-east1"

@@ -1,5 +1,5 @@
 {
-  "name": "saloon-scheduler",
+  "name": "appointment-scheduler",
   "version": "1.0.0",
   "description": "AI Agent built with Google ADK (TypeScript)",
   "type": "module",
