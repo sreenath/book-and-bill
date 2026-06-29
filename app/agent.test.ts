@@ -33,4 +33,22 @@ describe('Agent system instructions cleanup', () => {
     expect(instruction).toContain('alternative');
     expect(instruction).toContain('suggest');
   });
+
+  it('should instruct the agent on the rescheduling verification and search constraints', () => {
+    const instruction = (rootAgent.instruction as string).toLowerCase();
+
+    // Check that rescheduling instructions are present and mirror cancellation rules
+    expect(instruction).toContain('reschedule');
+    expect(instruction).toContain('customer\'s full name');
+    expect(instruction).toContain('phone number');
+    expect(instruction).toContain('date and time');
+    expect(instruction).toContain('only search for an existing appointment');
+    expect(instruction).toContain('search_appointments');
+    expect(instruction).toContain('provided at least the customer\'s full name, phone number, and the date');
+    expect(instruction).toContain('do not perform the search');
+    expect(instruction).toContain('all four details');
+    expect(instruction).toContain('required to proceed');
+    expect(instruction).toContain('verify that the details provided match');
+    expect(instruction).toContain('do not reschedule');
+  });
 });

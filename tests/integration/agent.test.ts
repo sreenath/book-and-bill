@@ -202,4 +202,76 @@ describe.runIf(hasApiKey)('Agent Integration', () => {
     const searchCall = toolCalls.find(tc => tc.name === 'search_appointments');
     expect(searchCall).toBeDefined();
   }, 30000);
+
+  it('should not search for rescheduling if user does not provide at least full name, phone, and date', async () => {
+    await sessionService.createSession({
+      appName: 'test-app',
+      userId: 'test-user',
+      sessionId: 'test-session-reschedule-insufficient',
+    });
+
+    const events: any[] = [];
+    for await (const event of runner.runAsync({
+      userId: 'test-user',
+      sessionId: 'test-session-reschedule-insufficient',
+      newMessage: {
+        role: 'user',
+        parts: [{ text: 'Reschedule my appointment. My name is John Doe.' }],
+      },
+    })) {
+      events.push(event);
+    }
+
+    expect(events.length).toBeGreaterThan(0);
+
+    if (hasQuotaError(events)) {
+      console.warn('Skipping test assertion: Gemini/LLM API free tier quota exceeded.');
+      return;
+    }
+
+    // Verify search_appointments tool was not called
+    const toolCalls = events.flatMap(e => getFunctionCalls(e));
+    const searchCall = toolCalls.find(tc => tc.name === 'search_appointments');
+    expect(searchCall).toBeUndefined();
+
+    // Verify response mentions that all four details are required
+    const textOutput = events
+      .filter(e => e.type === 'text')
+      .map(e => e.text)
+      .join(' ');
+    expect(textOutput.toLowerCase()).toContain('required');
+    expect(textOutput.toLowerCase()).toContain('four');
+  }, 30000);
+
+  it('should search for existing appointment when rescheduling if user provides full name, phone, and date', async () => {
+    await sessionService.createSession({
+      appName: 'test-app',
+      userId: 'test-user',
+      sessionId: 'test-session-reschedule-sufficient',
+    });
+
+    const events: any[] = [];
+    for await (const event of runner.runAsync({
+      userId: 'test-user',
+      sessionId: 'test-session-reschedule-sufficient',
+      newMessage: {
+        role: 'user',
+        parts: [{ text: 'Please reschedule the appointment for John Doe, phone 555-1234, on 2026-07-01 to 14:00.' }],
+      },
+    })) {
+      events.push(event);
+    }
+
+    expect(events.length).toBeGreaterThan(0);
+
+    if (hasQuotaError(events)) {
+      console.warn('Skipping test assertion: Gemini/LLM API free tier quota exceeded.');
+      return;
+    }
+
+    // Verify search_appointments tool was called
+    const toolCalls = events.flatMap(e => getFunctionCalls(e));
+    const searchCall = toolCalls.find(tc => tc.name === 'search_appointments');
+    expect(searchCall).toBeDefined();
+  }, 30000);
 });
