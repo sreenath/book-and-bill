@@ -3,7 +3,7 @@ import { rootAgent } from './agent.js';
 
 describe('Agent system instructions cleanup', () => {
   it('should not contain single quotes around tool names to prevent parser/model confusion', () => {
-    const instruction = rootAgent.instruction;
+    const instruction = rootAgent.instruction as string;
 
     // The instruction should refer to tools without surrounding single quotes
     expect(instruction).not.toContain("'list_services'");
@@ -23,7 +23,7 @@ describe('Agent system instructions cleanup', () => {
   });
 
   it('should explicitly instruct the agent to confirm booking details and not auto-book unavailable/unconfirmed slots', () => {
-    const instruction = rootAgent.instruction.toLowerCase();
+    const instruction = (rootAgent.instruction as string).toLowerCase();
 
     // Check for explicit confirmation requirement
     expect(instruction).toContain('explicit confirmation');
