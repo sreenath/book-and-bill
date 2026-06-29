@@ -9,6 +9,8 @@
     "dev": "tsc && npx @google/adk-devtools web -h localhost dist/agent.js",
     "run": "tsc && npx @google/adk-devtools run dist/agent.js",
     "test": "vitest run",
+    "test:unit": "vitest run app",
+    "test:integration": "vitest run tests",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },

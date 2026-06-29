@@ -42,9 +42,13 @@ const hasApiKey = !!(
   process.env.GOOGLE_API_KEY ||
   process.env.GOOGLE_GENAI_API_KEY ||
   process.env.GOOGLE_CLOUD_PROJECT ||
+  process.env.GROQ_API_KEY ||
+  process.env.OPENAI_API_KEY ||
   dotenvVars.GEMINI_API_KEY ||
   dotenvVars.GOOGLE_API_KEY ||
-  dotenvVars.GOOGLE_GENAI_API_KEY
+  dotenvVars.GOOGLE_GENAI_API_KEY ||
+  dotenvVars.GROQ_API_KEY ||
+  dotenvVars.OPENAI_API_KEY
 );
 
 describe.runIf(hasApiKey)('Server E2E', () => {

@@ -2,10 +2,17 @@ import { config } from 'dotenv';
 config();
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { Runner, InMemorySessionService } from '@google/adk';
+import { Runner, InMemorySessionService, getFunctionCalls } from '@google/adk';
 import { rootAgent } from '../../app/agent.js';
 
-const hasApiKey = !!(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || process.env.GOOGLE_GENAI_API_KEY || process.env.GOOGLE_CLOUD_PROJECT);
+const hasApiKey = !!(
+  process.env.GEMINI_API_KEY ||
+  process.env.GOOGLE_API_KEY ||
+  process.env.GOOGLE_GENAI_API_KEY ||
+  process.env.GOOGLE_CLOUD_PROJECT ||
+  process.env.GROQ_API_KEY ||
+  process.env.OPENAI_API_KEY
+);
 
 function hasQuotaError(events: any[]): boolean {
   return events.some(
@@ -122,5 +129,77 @@ describe.runIf(hasApiKey)('Agent Integration', () => {
       console.warn('Skipping test verification: Gemini API free tier quota exceeded.');
       return;
     }
+  }, 30000);
+
+  it('should not search for existing appointment if user does not provide at least full name, phone, and date', async () => {
+    await sessionService.createSession({
+      appName: 'test-app',
+      userId: 'test-user',
+      sessionId: 'test-session-cancel-insufficient',
+    });
+
+    const events: any[] = [];
+    for await (const event of runner.runAsync({
+      userId: 'test-user',
+      sessionId: 'test-session-cancel-insufficient',
+      newMessage: {
+        role: 'user',
+        parts: [{ text: 'Cancel my appointment. My name is John Doe.' }],
+      },
+    })) {
+      events.push(event);
+    }
+
+    expect(events.length).toBeGreaterThan(0);
+
+    if (hasQuotaError(events)) {
+      console.warn('Skipping test assertion: Gemini/LLM API free tier quota exceeded.');
+      return;
+    }
+
+    // Verify search_appointments tool was not called
+    const toolCalls = events.flatMap(e => getFunctionCalls(e));
+    const searchCall = toolCalls.find(tc => tc.name === 'search_appointments');
+    expect(searchCall).toBeUndefined();
+
+    // Verify response mentions that all four details are required
+    const textOutput = events
+      .filter(e => e.type === 'text')
+      .map(e => e.text)
+      .join(' ');
+    expect(textOutput.toLowerCase()).toContain('required');
+    expect(textOutput.toLowerCase()).toContain('four');
+  }, 30000);
+
+  it('should search for existing appointment if user provides full name, phone, and date', async () => {
+    await sessionService.createSession({
+      appName: 'test-app',
+      userId: 'test-user',
+      sessionId: 'test-session-cancel-sufficient',
+    });
+
+    const events: any[] = [];
+    for await (const event of runner.runAsync({
+      userId: 'test-user',
+      sessionId: 'test-session-cancel-sufficient',
+      newMessage: {
+        role: 'user',
+        parts: [{ text: 'Please cancel the appointment for John Doe, phone 555-1234, on 2026-07-01.' }],
+      },
+    })) {
+      events.push(event);
+    }
+
+    expect(events.length).toBeGreaterThan(0);
+
+    if (hasQuotaError(events)) {
+      console.warn('Skipping test assertion: Gemini/LLM API free tier quota exceeded.');
+      return;
+    }
+
+    // Verify search_appointments tool was called
+    const toolCalls = events.flatMap(e => getFunctionCalls(e));
+    const searchCall = toolCalls.find(tc => tc.name === 'search_appointments');
+    expect(searchCall).toBeDefined();
   }, 30000);
 });
