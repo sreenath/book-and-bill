@@ -1,12 +1,22 @@
 import { Gemini } from '@google/adk';
 import { OpenAiLlm } from './models/openai.js';
 import { GroqLlm } from './models/groq.js';
+import { OllamaLlm } from './models/ollama.js';
 import { BaseLlm } from '@google/adk';
 
 export function getDynamicModel(): BaseLlm {
   const geminiApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY;
   const groqApiKey = process.env.GROQ_API_KEY;
   const openAiApiKey = process.env.OPENAI_API_KEY;
+  const ollamaModel = process.env.OLLAMA_MODEL;
+
+  if (ollamaModel) {
+    const apiUrl = process.env.OLLAMA_API_URL;
+    return new OllamaLlm({
+      model: ollamaModel,
+      apiUrl,
+    });
+  }
 
   if (geminiApiKey) {
     const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';

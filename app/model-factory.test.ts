@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { getDynamicModel } from './model-factory.js';
 import { OpenAiLlm } from './models/openai.js';
 import { GroqLlm } from './models/groq.js';
+import { OllamaLlm } from './models/ollama.js';
 import { Gemini } from '@google/adk';
 
 // Save original env
@@ -18,6 +19,8 @@ describe('Model Factory and Adapters', () => {
     delete process.env.GEMINI_MODEL;
     delete process.env.GROQ_MODEL;
     delete process.env.OPENAI_MODEL;
+    delete process.env.OLLAMA_MODEL;
+    delete process.env.OLLAMA_API_URL;
   });
 
   afterEach(() => {
@@ -68,6 +71,22 @@ describe('Model Factory and Adapters', () => {
       process.env.GROQ_MODEL = 'custom-groq-model';
       const model = getDynamicModel();
       expect(model.model).toBe('custom-groq-model');
+    });
+
+    it('should select Ollama when OLLAMA_MODEL is present', () => {
+      process.env.OLLAMA_MODEL = 'gemma4';
+      const model = getDynamicModel();
+      expect(model).toBeInstanceOf(OllamaLlm);
+      expect(model.model).toBe('gemma4');
+    });
+
+    it('should configure custom Ollama API URL if provided', () => {
+      process.env.OLLAMA_MODEL = 'gemma4';
+      process.env.OLLAMA_API_URL = 'http://127.0.0.1:11434/v1/chat/completions';
+      const model = getDynamicModel() as OllamaLlm;
+      expect(model).toBeInstanceOf(OllamaLlm);
+      // Accessing private API URL to check
+      expect((model as any).apiUrl).toBe('http://127.0.0.1:11434/v1/chat/completions');
     });
   });
 
