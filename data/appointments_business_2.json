@@ -1,0 +1,12 @@
+[
+  {
+    "id": "APT-6349",
+    "customerName": "Joseph Mathew",
+    "customerPhone": "0403567543",
+    "serviceId": "massage",
+    "stylistId": "david",
+    "date": "2026-07-06",
+    "time": "10:00",
+    "durationMinutes": 60
+  }
+]

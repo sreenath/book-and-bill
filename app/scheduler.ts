@@ -1,18 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { SERVICES as configServices, STYLISTS as configStylists, ACTIVE_CONFIG } from './config/business-config.js';
+import { Service, Stylist } from './config/types.js';
 
-export interface Service {
-  id: string;
-  name: string;
-  price: number;
-  durationMinutes: number;
-}
-
-export interface Stylist {
-  id: string;
-  name: string;
-  specialties: string[];
-}
+export { Service, Stylist };
 
 export interface Appointment {
   id: string;
@@ -25,22 +16,13 @@ export interface Appointment {
   durationMinutes: number;
 }
 
-export const SERVICES: Service[] = [
-  { id: 'haircut', name: 'Haircut & Styling', price: 35, durationMinutes: 30 },
-  { id: 'coloring', name: 'Hair Coloring', price: 85, durationMinutes: 90 },
-  { id: 'manicure', name: 'Manicure', price: 25, durationMinutes: 30 },
-  { id: 'pedicure', name: 'Pedicure', price: 40, durationMinutes: 45 },
-  { id: 'facial', name: 'Facial & Skin Care', price: 60, durationMinutes: 60 },
-];
-
-export const STYLISTS: Stylist[] = [
-  { id: 'alice', name: 'Alice Smith', specialties: ['haircut', 'coloring'] },
-  { id: 'bob', name: 'Bob Jones', specialties: ['haircut'] },
-  { id: 'charlie', name: 'Charlie Brown', specialties: ['manicure', 'pedicure', 'facial'] },
-];
+export const SERVICES: Service[] = configServices;
+export const STYLISTS: Stylist[] = configStylists;
 
 const DB_DIR = path.resolve(process.cwd(), 'data');
-const DB_FILE = path.join(DB_DIR, 'appointments.json');
+const isTest = process.env.NODE_ENV === 'test' || !!process.env.VITEST;
+const suffix = isTest ? '_test' : '';
+const DB_FILE = path.join(DB_DIR, `appointments_${ACTIVE_CONFIG.id}${suffix}.json`);
 
 function ensureDbExists() {
   if (!fs.existsSync(DB_DIR)) {
@@ -60,6 +42,13 @@ export function getAppointments(): Appointment[] {
     console.error('Failed to read appointments:', err);
     return [];
   }
+}
+
+export const DB_FILE_PATH = DB_FILE;
+
+export function clearDatabase(): void {
+  ensureDbExists();
+  fs.writeFileSync(DB_FILE, JSON.stringify([], null, 2), 'utf-8');
 }
 
 export function saveAppointments(appointments: Appointment[]): void {

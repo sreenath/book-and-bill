@@ -27,6 +27,13 @@ The Appointment Scheduler is an AI-powered appointment management system designe
 │   ├── model-factory.ts           # Dynamic model selection factory
 │   ├── scheduler.ts               # Core database definitions and helpers
 │   ├── scheduler.test.ts          # Colocated unit test for database & domain helpers
+│   ├── config/                    # Business configurations and validation helpers
+│   │   ├── types.ts               # Configuration type interfaces
+│   │   ├── business_1.ts          # Business 1 (Tony & Guy Saloon) config
+│   │   ├── business_2.ts          # Business 2 (Ray's Saloon) config
+│   │   ├── business-config.ts     # Dynamic config loader & test mock helper
+│   │   ├── validation.ts          # Date and operating day validations
+│   │   └── validation.test.ts     # Validation unit test
 │   ├── models/
 │   │   ├── openai.ts              # Custom OpenAI LLM connection adapter
 │   │   └── groq.ts                # Custom Groq LLM connection adapter
@@ -49,7 +56,7 @@ The Appointment Scheduler is an AI-powered appointment management system designe
 │       ├── get-current-date.ts    # tool: get_current_date
 │       └── get-current-date.test.ts
 ├── data/
-│   └── appointments.json          # File-based JSON database (created at runtime)
+│   └── appointments_${businessId}.json # Dynamic file-based JSON database (created at runtime)
 ├── specs/
 │   └── appointment_scheduler_spec.md # This project specification file
 └── tests/
@@ -95,7 +102,7 @@ The Appointment Scheduler is an AI-powered appointment management system designe
 3. **Collision / Overlap Detection**: A stylist cannot have overlapping appointments on the same date. 
    An overlap occurs if:
    $$\max(\text{start}_1, \text{start}_2) < \min(\text{end}_1, \text{end}_2)$$
-4. **Database File**: Appointments are saved as a JSON array under `data/appointments.json`. The directory and file are initialized automatically if they do not exist.
+4. **Database File**: Appointments are saved as a JSON array under `data/appointments_${businessId}.json` in production, or `data/appointments_${businessId}_test.json` in test environments. The directory and file are initialized automatically if they do not exist.
 
 ---
 
@@ -143,4 +150,31 @@ Its system instructions are:
 
 ## 8. Test Settings
 - **Colocated tests**: Unit tests are colocated alongside implementations in `app/tools/*.test.ts` and `app/scheduler.test.ts`.
-- **Sequential Execution**: In `vitest.config.ts`, `fileParallelism: false` is configured to prevent file-based conflicts on `appointments.json` when test files execute.
+- **Sequential Execution**: In `vitest.config.ts`, `fileParallelism: false` is configured to prevent file-based conflicts on dynamic test database files when test files execute.
+
+---
+
+## 9. Multi-Tenant Business Configuration
+The system supports multiple salon business configurations dynamically resolved via the `BUSINESS_ID` environment variable (defaults to `business_1`).
+
+### Business Profiles
+1. **Business 1 (Tony & Guy Saloon)**
+   - Name: `Tony & Guy Saloon`
+   - Initial greeting: `"Welcome to Tony & Guy Saloon"`
+   - Booking Window: `1 month`
+   - Operating Days: `All days` (Sunday - Saturday)
+   - Services & Stylists: Default catalog (haircut, coloring, manicure, pedicure, facial; Alice, Bob, Charlie)
+
+2. **Business 2 (Ray's Saloon)**
+   - Name: `Ray's saloon`
+   - Initial greeting: `"Welcome to Ray's saloon. How can I help you?"`
+   - Booking Window: `6 months`
+   - Operating Days: `Weekdays only` (Monday - Friday)
+   - Services & Stylists: Custom catalog
+     - Services: `massage` (Full Body Massage, $100, 60 mins), `makeup` (Professional Makeup, $75, 45 mins)
+     - Stylists: `david` (specialty: `massage`), `eva` (specialty: `makeup`)
+
+### Scheduling Constraints & Validation
+- **Booking Window Check**: Bookings are restricted from the current date up to `currentDate + bookingWindowMonths`. Violations return a validation error.
+- **Operating Day Check**: If a booking is requested on a day the business is closed, the system returns a validation error detailing that the salon is closed and offering the next operating day in YYYY-MM-DD format.
+- **Database Isolation**: Production data is stored in `data/appointments_${businessId}.json`. Unit and integration tests write to `data/appointments_${businessId}_test.json` to prevent modifying active production records.

@@ -1,16 +1,17 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { createBooking } from './create-booking.js';
-import * as fs from 'fs';
-import * as path from 'path';
-
-const DB_DIR = path.resolve(process.cwd(), 'data');
-const DB_FILE = path.join(DB_DIR, 'appointments.json');
+import { clearDatabase } from '../scheduler.js';
+import { setTestConfig } from '../config/business-config.js';
+import { business1Config } from '../config/business_1.js';
+import { business2Config } from '../config/business_2.js';
 
 describe('createBooking tool', () => {
   beforeEach(() => {
-    if (fs.existsSync(DB_FILE)) {
-      fs.writeFileSync(DB_FILE, JSON.stringify([], null, 2), 'utf-8');
-    }
+    clearDatabase();
+  });
+
+  afterEach(() => {
+    setTestConfig(business1Config);
   });
 
   it('should book an appointment', async () => {
@@ -28,5 +29,40 @@ describe('createBooking tool', () => {
     expect(result.status).toBe('success');
     expect(result.appointment).toBeDefined();
     expect(result.appointment.customerName).toBe('John Doe');
+  });
+
+  it('should fail booking if date is outside booking window', async () => {
+    const result = await createBooking.runAsync({
+      args: {
+        customerName: 'John Doe',
+        customerPhone: '555-1234',
+        serviceId: 'haircut',
+        stylistId: 'alice',
+        date: '2026-09-01',
+        time: '10:00',
+      },
+      toolContext: {} as any,
+    }) as any;
+    expect(result.status).toBe('error');
+    expect(result.message).toContain('outside the allowed booking window');
+  });
+
+  it('should fail booking if date is non-operating day and offer next operating day', async () => {
+    setTestConfig(business2Config);
+
+    const result = await createBooking.runAsync({
+      args: {
+        customerName: 'Ray Customer',
+        customerPhone: '555-4321',
+        serviceId: 'massage',
+        stylistId: 'david',
+        date: '2026-07-04', // Saturday
+        time: '10:00',
+      },
+      toolContext: {} as any,
+    }) as any;
+    expect(result.status).toBe('error');
+    expect(result.message).toContain('not an operating day');
+    expect(result.message).toContain('2026-07-06');
   });
 });

@@ -7,6 +7,12 @@ import {
   parseTimeToMinutes,
   formatMinutesToTime,
 } from '../scheduler.js';
+import { ACTIVE_CONFIG } from '../config/business-config.js';
+import {
+  isDateWithinBookingWindow,
+  isOperatingDay,
+  getNextOperatingDay,
+} from '../config/validation.js';
 
 export function getAvailableSlots(date: string, serviceId: string, stylistId: string): string[] {
   const service = SERVICES.find(s => s.id === serviceId);
@@ -60,6 +66,20 @@ export const checkAvailability = new FunctionTool({
     stylistId: z.string().describe('The ID of the stylist (e.g., "alice", "bob", "charlie").'),
   }),
   execute: ({ date, serviceId, stylistId }) => {
+    if (!isDateWithinBookingWindow(date, ACTIVE_CONFIG.bookingWindowMonths)) {
+      return {
+        status: 'error',
+        message: `Date ${date} is outside the allowed booking window of ${ACTIVE_CONFIG.bookingWindowMonths} month(s).`,
+      };
+    }
+    if (!isOperatingDay(date, ACTIVE_CONFIG.operatingDays)) {
+      const nextDay = getNextOperatingDay(date, ACTIVE_CONFIG.operatingDays);
+      return {
+        status: 'error',
+        message: `${date} is not an operating day. The next operating day is ${nextDay}.`,
+        nextOperatingDay: nextDay,
+      };
+    }
     const slots = getAvailableSlots(date, serviceId, stylistId);
     return { status: 'success', date, serviceId, stylistId, availableSlots: slots };
   },

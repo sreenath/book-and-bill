@@ -1,17 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { searchBookings } from './search-bookings.js';
 import { createBooking } from './create-booking.js';
-import * as fs from 'fs';
-import * as path from 'path';
-
-const DB_DIR = path.resolve(process.cwd(), 'data');
-const DB_FILE = path.join(DB_DIR, 'appointments.json');
+import { clearDatabase } from '../scheduler.js';
 
 describe('searchBookings tool', () => {
   beforeEach(() => {
-    if (fs.existsSync(DB_FILE)) {
-      fs.writeFileSync(DB_FILE, JSON.stringify([], null, 2), 'utf-8');
-    }
+    clearDatabase();
   });
 
   it('should find bookings', async () => {

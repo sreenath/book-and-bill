@@ -1,10 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import * as fs from 'fs';
-import * as path from 'path';
 import {
   SERVICES,
   STYLISTS,
   getAppointments,
+  clearDatabase,
 } from './scheduler.js';
 import { getAvailableSlots } from './tools/check-availability.js';
 import { bookAppointment } from './tools/create-booking.js';
@@ -12,15 +11,9 @@ import { cancelAppointment } from './tools/cancel-booking.js';
 import { rescheduleAppointment } from './tools/reschedule-booking.js';
 import { findAppointments } from './tools/search-bookings.js';
 
-const DB_DIR = path.resolve(process.cwd(), 'data');
-const DB_FILE = path.join(DB_DIR, 'appointments.json');
-
 describe('Saloon Scheduler Unit Tests', () => {
   beforeEach(() => {
-    // Reset/clear appointments file before each test
-    if (fs.existsSync(DB_FILE)) {
-      fs.writeFileSync(DB_FILE, JSON.stringify([], null, 2), 'utf-8');
-    }
+    clearDatabase();
   });
 
   it('should list services and stylists correctly', () => {

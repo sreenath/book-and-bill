@@ -9,6 +9,12 @@ import {
   formatMinutesToTime,
   Appointment,
 } from '../scheduler.js';
+import { ACTIVE_CONFIG } from '../config/business-config.js';
+import {
+  isDateWithinBookingWindow,
+  isOperatingDay,
+  getNextOperatingDay,
+} from '../config/validation.js';
 
 export function bookAppointment(
   customerName: string,
@@ -30,6 +36,15 @@ export function bookAppointment(
 
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     return { success: false, error: "Invalid date format. Expected YYYY-MM-DD." };
+  }
+
+  if (!isDateWithinBookingWindow(date, ACTIVE_CONFIG.bookingWindowMonths)) {
+    return { success: false, error: `Date ${date} is outside the allowed booking window of ${ACTIVE_CONFIG.bookingWindowMonths} month(s).` };
+  }
+
+  if (!isOperatingDay(date, ACTIVE_CONFIG.operatingDays)) {
+    const nextDay = getNextOperatingDay(date, ACTIVE_CONFIG.operatingDays);
+    return { success: false, error: `${date} is not an operating day. The next operating day is ${nextDay}.` };
   }
 
   if (!/^\d{2}:\d{2}$/.test(time)) {
