@@ -30,7 +30,7 @@ Book&Bill is an AI-powered appointment management and billing system designed fo
 │   ├── config/                    # Business configurations and validation helpers
 │   │   ├── types.ts               # Configuration type interfaces
 │   │   ├── business_1.ts          # Business 1 (Tony & Guy Saloon) config
-│   │   ├── business_2.ts          # Business 2 (Ray's Saloon) config
+│   │   ├── business_2.ts          # Business 2 (Ray's SPA) config
 │   │   ├── business-config.ts     # Dynamic config loader & test mock helper
 │   │   ├── validation.ts          # Date and operating day validations
 │   │   └── validation.test.ts     # Validation unit test
@@ -217,9 +217,9 @@ The system supports multiple salon business configurations dynamically resolved 
    - Operating Days: `All days` (Sunday - Saturday)
    - Services & Stylists: Default catalog (haircut, coloring, manicure, pedicure, facial; Alice, Bob, Charlie)
 
-2. **Business 2 (Ray's Saloon)**
-   - Name: `Ray's saloon`
-   - Initial greeting: `"Welcome to Ray's saloon. How can I help you?"`
+2. **Business 2 (Ray's SPA)**
+   - Name: `Ray's SPA`
+   - Initial greeting: `"Welcome to Ray's SPA. How can I help you?"`
    - Booking Window: `6 months`
    - Operating Days: `Weekdays only` (Monday - Friday)
    - Services & Stylists: Custom catalog

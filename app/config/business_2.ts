@@ -2,8 +2,8 @@ import { BusinessConfig } from './types.js';
 
 export const business2Config: BusinessConfig = {
   id: 'business_2',
-  name: "Ray's saloon",
-  welcomeMessage: "Welcome to Ray's saloon. How can I help you?",
+  name: "Ray's SPA",
+  welcomeMessage: "Welcome to Ray's SPA. How can I help you?",
   bookingWindowMonths: 6,
   operatingDays: [1, 2, 3, 4, 5], // Weekdays only
   operatingDaysDescription: 'weekdays only (Monday to Friday)',
