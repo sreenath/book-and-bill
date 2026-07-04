@@ -178,7 +178,7 @@ The conversational assistant is structured as a multi-agent system consisting of
 ### Conversational Guidelines by Agent
 
 #### 1. Root Orchestrator Agent (`book_and_bill_agent`)
-- **Greeting**: Always greet the user with the configured initial greeting: `${ACTIVE_CONFIG.welcomeMessage}`.
+- **Greeting**: The agent greets the customer first before the user enters anything in the chat by pre-populating the session with the configured initial greeting: `${ACTIVE_CONFIG.welcomeMessage}`.
 - **Routing**:
   - If user wants to check slot availability, book, reschedule, or cancel bookings, delegate to the `appointment_agent`.
   - If user wants to create an invoice, get a price quote, or generate a PDF of their invoice or quote, delegate to the `invoice_quote_agent`.

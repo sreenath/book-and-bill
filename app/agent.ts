@@ -1,5 +1,8 @@
 import 'dotenv/config';
-import { LlmAgent } from '@google/adk';
+import { LlmAgent, InMemorySessionService, createEvent } from '@google/adk';
+import { createRequire } from 'module';
+const requireCjs = createRequire(import.meta.url);
+const { InMemorySessionService: CjsInMemorySessionService } = requireCjs('@google/adk');
 import { getDynamicModel } from './model-factory.js';
 import {
   listServices,
@@ -15,6 +18,50 @@ import {
   generatePdf,
 } from './tools/index.js';
 import { ACTIVE_CONFIG } from './config/business-config.js';
+
+// Intercept session creation to pre-populate with the initial greeting welcome message
+const overrideCreateSession = function (originalCreateSession: any) {
+  return async function (this: any, request: any) {
+    const session = await originalCreateSession.call(this, request);
+    const greetingEvent = createEvent({
+      invocationId: 'init',
+      author: 'book_and_bill_agent',
+      timestamp: Date.now(),
+      content: {
+        role: 'model',
+        parts: [{ text: ACTIVE_CONFIG.welcomeMessage }],
+      },
+    });
+
+    const self = this;
+    if (self.sessions?.[request.appName]?.[request.userId]?.[session.id]) {
+      self.sessions[request.appName][request.userId][session.id].events.push(greetingEvent);
+    }
+    session.events.push(greetingEvent);
+
+    return session;
+  };
+};
+
+const overrideListSessions = function (originalListSessions: any) {
+  return async function (this: any, request: any) {
+    const res = await originalListSessions.call(this, request);
+    if (res && res.sessions) {
+      const arr = res.sessions;
+      arr.sessions = arr;
+      return arr;
+    }
+    const emptyArr: any = [];
+    emptyArr.sessions = emptyArr;
+    return emptyArr;
+  };
+};
+
+InMemorySessionService.prototype.createSession = overrideCreateSession(InMemorySessionService.prototype.createSession);
+CjsInMemorySessionService.prototype.createSession = overrideCreateSession(CjsInMemorySessionService.prototype.createSession);
+
+InMemorySessionService.prototype.listSessions = overrideListSessions(InMemorySessionService.prototype.listSessions);
+CjsInMemorySessionService.prototype.listSessions = overrideListSessions(CjsInMemorySessionService.prototype.listSessions);
 
 const model = getDynamicModel();
 

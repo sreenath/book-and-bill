@@ -1,1 +1,22 @@
-[]
+[
+  {
+    "id": "APT-2655",
+    "customerName": "Joseph Thomas",
+    "customerPhone": "919887655678",
+    "serviceId": "coloring",
+    "stylistId": "alice",
+    "date": "2026-07-06",
+    "time": "10:00",
+    "durationMinutes": 90
+  },
+  {
+    "id": "APT-3962",
+    "customerName": "John Mathews",
+    "customerPhone": "0456566456",
+    "serviceId": "manicure",
+    "stylistId": "charlie",
+    "date": "2026-07-07",
+    "time": "12:00",
+    "durationMinutes": 30
+  }
+]
