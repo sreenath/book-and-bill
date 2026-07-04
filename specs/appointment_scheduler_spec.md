@@ -190,7 +190,7 @@ The conversational assistant is structured as a multi-agent system consisting of
 - **Booking**: Gather customer name, phone, service ID, stylist ID, date (YYYY-MM-DD), and time (HH:MM). Check availability using `check_availability` first. If available, summarize details and get explicit user confirmation before calling `book_appointment`. If unavailable, suggest alternative slots.
 - **Cancellation**: Gather name, phone, date, and time. Must search using `search_appointments` (requires name, phone, date). Verify retrieved booking matches user details. Ask for explicit user confirmation before calling `cancel_appointment`.
 - **Rescheduling**: Same search/verification guidelines as cancellation. Then verify new date/time availability and request explicit user confirmation before calling `reschedule_appointment`.
-- **Dates**: Use `get_current_date` to calculate relative dates.
+- **Dates**: Use `get_current_date` to calculate relative dates. If the user provides a date without a year (e.g. "July 15", "15th July", "07-15"), the agent must first get today's date using the `get_current_date` tool. It must then check if there is a day/date available within the booking window (meaning it is not in the past and is within the configured booking window months). If so, it must provide that fully resolved date and confirm it with the user before checking availability or proceeding with booking/rescheduling.
 
 #### 3. Invoice/Quote Agent (`invoice_quote_agent`)
 - **Invoices**: Create using `create_invoice` (requires appointment ID). If the appointment ID is missing, search for the appointment using `search_appointments` (requires customer name, phone, and appointment date).

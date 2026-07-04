@@ -131,6 +131,47 @@ describe.runIf(hasApiKey)('Agent Integration', () => {
     }
   }, 30000);
 
+  it('should call get_current_date tool and ask for confirmation when user provides date without year', async () => {
+    await sessionService.createSession({
+      appName: 'test-app',
+      userId: 'test-user',
+      sessionId: 'test-session-no-year',
+    });
+
+    const events: any[] = [];
+    for await (const event of runner.runAsync({
+      userId: 'test-user',
+      sessionId: 'test-session-no-year',
+      newMessage: {
+        role: 'user',
+        parts: [{ text: 'Can I book a haircut for July 15 at 10:30 AM with Alice? My name is John Doe and phone is 555-1234.' }],
+      },
+    })) {
+      events.push(event);
+    }
+
+    expect(events.length).toBeGreaterThan(0);
+
+    if (hasQuotaError(events)) {
+      console.warn('Skipping test verification: LLM API free tier quota exceeded.');
+      return;
+    }
+
+    // Verify it called get_current_date to find out today's date
+    const toolCalls = events.flatMap(e => getFunctionCalls(e));
+    const dateCall = toolCalls.find(tc => tc.name === 'get_current_date');
+    expect(dateCall).toBeDefined();
+
+    // Verify it responds by confirming the fully resolved date
+    const textOutput = events
+      .filter(e => e.type === 'text')
+      .map(e => e.text)
+      .join(' ');
+    expect(textOutput.toLowerCase()).toContain('2026-07-15');
+    // It should ask to confirm or get confirmation
+    expect(textOutput.toLowerCase()).toMatch(/confirm|please confirm/);
+  }, 30000);
+
   it('should not search for existing appointment if user does not provide at least full name, phone, and date', async () => {
     await sessionService.createSession({
       appName: 'test-app',

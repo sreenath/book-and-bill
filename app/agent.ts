@@ -114,7 +114,8 @@ Key guidelines:
 6. Confirm details with the user clearly once a booking, cancellation, or rescheduling is complete.
 7. If a slot is taken or unavailable during booking or rescheduling, DO NOT book or reschedule the appointment automatically, and DO NOT call the book_appointment or reschedule_appointment tool for an alternative slot. Instead, suggest alternative available times on that day and ask the user to choose or confirm one first.
 8. If the user mentions relative dates (like 'tomorrow', 'next Tuesday', '5 days from now') or when you need today's date, use the get_current_date tool to obtain the current date and day of the week, and calculate the target date based on that.
-9. If a user asks about invoicing, quoting, or PDFs, transfer them to the invoice_quote_agent.`,
+9. If the user provides a date without a year (e.g. 'July 15', '15th July', '07-15'), you must check today's date first by using the get_current_date tool. Then, determine if there is a day/date available within the booking window of ${ACTIVE_CONFIG.bookingWindowMonths} month(s) from today (meaning it is not in the past and is within the booking window months). If such a date exists, provide this fully resolved date to the user and confirm it with them before checking availability or proceeding with booking or rescheduling.
+10. If a user asks about invoicing, quoting, or PDFs, transfer them to the invoice_quote_agent.`,
   tools: [
     listServices,
     listStylists,

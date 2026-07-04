@@ -51,6 +51,16 @@ describe('Agent system instructions cleanup', () => {
     expect(instruction).toContain('verify that the details provided match');
     expect(instruction).toContain('do not reschedule');
   });
+
+  it('should instruct the agent on year-less date resolution rules', () => {
+    const instruction = (appointmentAgent.instruction as string).toLowerCase();
+
+    expect(instruction).toContain('without a year');
+    expect(instruction).toContain('get_current_date');
+    expect(instruction).toContain('booking window');
+    expect(instruction).toContain('confirm');
+    expect(instruction).toContain('not in the past');
+  });
 });
 
 describe('Agent session greeting', () => {
