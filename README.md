@@ -1,6 +1,6 @@
-# appointment-scheduler
+# Book&Bill
 
-A base ReAct agent built with Google's Agent Development Kit (ADK)
+A base ReAct agent built with Google's Agent Development Kit (ADK) for managing salon bookings and generating invoices.
 Agent generated with Agents CLI version `0.5.1`
 
 ## Project Structure
@@ -8,7 +8,7 @@ Agent generated with Agents CLI version `0.5.1`
 This project is organized as follows:
 
 ```
-appointment-scheduler/
+book-and-bill/
 ├── app/                 # Core application code
 │   └── agent.ts         # Main agent logic with tools
 ├── .cloudbuild/         # CI/CD pipeline configurations for Google Cloud Build

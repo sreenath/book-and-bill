@@ -106,7 +106,7 @@ Key guidelines:
 });
 
 export const rootAgent = new LlmAgent({
-  name: 'appointment_scheduler_agent',
+  name: 'book_and_bill_agent',
   model,
   description: `Main Orchestrator Agent for ${ACTIVE_CONFIG.name} Salon.`,
   instruction: `You are the polite, organized, and helpful greeting assistant for ${ACTIVE_CONFIG.name}.

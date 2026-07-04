@@ -3,6 +3,7 @@ import { config } from 'dotenv';
 
 // Load .env from project root before tests run
 config();
+process.env.BUSINESS_ID = 'business_1';
 
 export default defineConfig({
   test: {

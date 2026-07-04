@@ -40,7 +40,7 @@ run:
 deploy:
 	PROJECT_ID=$$(gcloud config get-value project) && \
 	AGENT_VERSION=$$(node -e "console.log(require('./package.json').version)") && \
-	gcloud beta run deploy appointment-scheduler \
+	gcloud beta run deploy book-and-bill \
 		--source . \
 		--memory "4Gi" \
 		--project $$PROJECT_ID \

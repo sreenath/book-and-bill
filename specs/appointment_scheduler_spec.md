@@ -1,11 +1,11 @@
-# Appointment Scheduler Project Specification
+# Book&Bill Project Specification
 
-This specification documents the functional requirements, architectural design, database model, business rules, and interface definitions for the Appointment Scheduler AI Agent. This document allows any AI agent to recreate the project successfully.
+This specification documents the functional requirements, architectural design, database model, business rules, and interface definitions for the Book&Bill AI Agent. This document allows any AI agent to recreate the project successfully.
 
 ---
 
 ## 1. Project Overview
-The Appointment Scheduler is an AI-powered appointment management system designed for a hair and beauty salon. It enables users to interact with a conversational assistant (built using Google ADK) to look up services and stylists, check slot availability, book, reschedule, or cancel appointments, and search for bookings.
+Book&Bill is an AI-powered appointment management and billing system designed for a hair and beauty salon. It enables users to interact with a conversational assistant (built using Google ADK) to look up services and stylists, check slot availability, book, reschedule, or cancel appointments, search for bookings, request quotes, and generate invoices.
 
 ---
 
@@ -171,13 +171,13 @@ The agent is configured as an `LlmAgent`. Rather than using a hardcoded model, i
 
 ### Multi-Agent Architecture
 The conversational assistant is structured as a multi-agent system consisting of:
-1. **Root Orchestrator Agent (`appointment_scheduler_agent`)**: Greet the user, understand their high-level intent, and route/transfer control to the specialized sub-agents.
+1. **Root Orchestrator Agent (`book_and_bill_agent`)**: Greet the user, understand their high-level intent, and route/transfer control to the specialized sub-agents.
 2. **Appointment Agent (`appointment_agent`)**: Specialized sub-agent that handles all appointment scheduling tasks.
 3. **Invoice/Quote Agent (`invoice_quote_agent`)**: Specialized sub-agent that handles invoicing, price quotes, and PDF downloads.
 
 ### Conversational Guidelines by Agent
 
-#### 1. Root Orchestrator Agent (`appointment_scheduler_agent`)
+#### 1. Root Orchestrator Agent (`book_and_bill_agent`)
 - **Greeting**: Always greet the user with the configured initial greeting: `${ACTIVE_CONFIG.welcomeMessage}`.
 - **Routing**:
   - If user wants to check slot availability, book, reschedule, or cancel bookings, delegate to the `appointment_agent`.

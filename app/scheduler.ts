@@ -1,9 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { SERVICES as configServices, STYLISTS as configStylists, ACTIVE_CONFIG } from './config/business-config.js';
-import { Service, Stylist } from './config/types.js';
+import type { Service, Stylist } from './config/types.js';
 
-export { Service, Stylist };
+export type { Service, Stylist };
 
 export interface Appointment {
   id: string;

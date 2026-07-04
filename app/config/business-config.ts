@@ -10,7 +10,7 @@ export function getActiveBusinessConfig(): BusinessConfig {
   return business1Config;
 }
 
-import { Service, Stylist } from './types.js';
+import type { Service, Stylist } from './types.js';
 
 const resolvedConfig = getActiveBusinessConfig();
 
