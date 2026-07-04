@@ -6,3 +6,6 @@ export { cancelBooking } from './cancel-booking.js';
 export { rescheduleBooking } from './reschedule-booking.js';
 export { searchBookings } from './search-bookings.js';
 export { getCurrentDate } from './get-current-date.js';
+export { createInvoice } from './create-invoice.js';
+export { createQuote } from './create-quote.js';
+export { generatePdf } from './generate-pdf.js';

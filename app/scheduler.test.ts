@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   SERVICES,
   STYLISTS,
@@ -13,7 +13,13 @@ import { findAppointments } from './tools/search-bookings.js';
 
 describe('Saloon Scheduler Unit Tests', () => {
   beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-07-01T10:00:00'));
     clearDatabase();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('should list services and stylists correctly', () => {

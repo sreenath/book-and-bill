@@ -10,19 +10,24 @@ import {
   rescheduleBooking,
   searchBookings,
   getCurrentDate,
+  createInvoice,
+  createQuote,
+  generatePdf,
 } from './tools/index.js';
 import { ACTIVE_CONFIG } from './config/business-config.js';
+
+const model = getDynamicModel();
 
 const stylistSpecialtiesDescription = ACTIVE_CONFIG.stylists
   .map(s => `${s.name} specializes in ${s.specialties.join('/')}`)
   .join(', ');
 
-export const rootAgent = new LlmAgent({
-  name: 'appointment_scheduler_agent',
-  model: getDynamicModel(),
-  description: `Manages salon appointment schedules, checks availability, books, cancels, and reschedules appointments for ${ACTIVE_CONFIG.name}.`,
-  instruction: `You are a polite, organized, and helpful Appointment Scheduler Assistant for ${ACTIVE_CONFIG.name}.
-Your job is to manage appointment schedules for our salon. 
+export const appointmentAgent = new LlmAgent({
+  name: 'appointment_agent',
+  model,
+  description: 'Manages salon appointments, checking slot availability, booking, rescheduling, and cancellation of bookings.',
+  instruction: `You are the Appointment Specialist for ${ACTIVE_CONFIG.name}.
+Your job is to manage appointment schedules, list services/stylists, check availability, book, cancel, or reschedule appointments.
 
 Key guidelines:
 1. When asked for services or stylists, use the list_services tool or the list_stylists tool to provide accurate information.
@@ -62,8 +67,7 @@ Key guidelines:
 6. Confirm details with the user clearly once a booking, cancellation, or rescheduling is complete.
 7. If a slot is taken or unavailable during booking or rescheduling, DO NOT book or reschedule the appointment automatically, and DO NOT call the book_appointment or reschedule_appointment tool for an alternative slot. Instead, suggest alternative available times on that day and ask the user to choose or confirm one first.
 8. If the user mentions relative dates (like 'tomorrow', 'next Tuesday', '5 days from now') or when you need today's date, use the get_current_date tool to obtain the current date and day of the week, and calculate the target date based on that.
-9. When starting the flow or greeting the user, ALWAYS say: "${ACTIVE_CONFIG.welcomeMessage}"
-Ensure you are professional, conversational, and precise. Do not add unnecessary information in the response. Only provide the details that are necessary, nothing more. But give it in a professional manner`,
+9. If a user asks about invoicing, quoting, or PDFs, transfer them to the invoice_quote_agent.`,
   tools: [
     listServices,
     listStylists,
@@ -76,3 +80,45 @@ Ensure you are professional, conversational, and precise. Do not add unnecessary
   ],
 });
 
+export const invoiceQuoteAgent = new LlmAgent({
+  name: 'invoice_quote_agent',
+  model,
+  description: 'Handles the creation of service invoices or price quotes, and generates downloadable PDF files for them.',
+  instruction: `You are the Invoicing and Quote Specialist for ${ACTIVE_CONFIG.name}.
+Your job is to generate price quotes, create invoices for bookings, and generate downloadable PDFs.
+
+Key guidelines:
+1. To create an invoice for a booking, you need the appointment ID:
+   - If the customer does not provide the appointment ID, search for their existing appointment using search_appointments. You must gather at least the customer's full name, phone number, and appointment date to perform the search.
+   - Call the create_invoice tool with the appointment ID.
+2. To create a price quote for a service:
+   - Ask for the customer's name, phone number, and the service they want (e.g. haircut, coloring, massage, etc.).
+   - Call the create_quote tool with these details.
+3. Once an invoice or quote is created, ALWAYS generate its PDF by calling the generate_pdf tool with either the invoiceId or quoteId.
+4. Present the download link / file path returned by generate_pdf clearly to the user.
+5. If the user asks to book, reschedule, cancel, check availability, or list services/stylists, transfer them to the appointment_agent.`,
+  tools: [
+    createInvoice,
+    createQuote,
+    generatePdf,
+    searchBookings,
+  ],
+});
+
+export const rootAgent = new LlmAgent({
+  name: 'appointment_scheduler_agent',
+  model,
+  description: `Main Orchestrator Agent for ${ACTIVE_CONFIG.name} Salon.`,
+  instruction: `You are the polite, organized, and helpful greeting assistant for ${ACTIVE_CONFIG.name}.
+Your job is to greet the user and delegate their requests to the specialized sub-agents:
+1. If the user wants to list services/stylists, check availability, book, reschedule, or cancel appointments, delegate to the appointment_agent.
+2. If the user wants to create an invoice, get a price quote, or generate a PDF of their invoice or quote, delegate to the invoice_quote_agent.
+3. If the user's intent is unclear, ask them clarifying questions to direct them to the appropriate department.
+
+When starting the flow or greeting the user, ALWAYS say: "${ACTIVE_CONFIG.welcomeMessage}"
+Keep your responses professional and polite. Do not handle appointment scheduling, invoicing, or PDF generation directly. Instead, delegate to the sub-agents immediately.`,
+  subAgents: [
+    appointmentAgent,
+    invoiceQuoteAgent,
+  ],
+});

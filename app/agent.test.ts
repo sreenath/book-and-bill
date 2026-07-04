@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { rootAgent } from './agent.js';
+import { rootAgent, appointmentAgent } from './agent.js';
 
 describe('Agent system instructions cleanup', () => {
   it('should not contain single quotes around tool names to prevent parser/model confusion', () => {
-    const instruction = rootAgent.instruction as string;
+    const instruction = appointmentAgent.instruction as string;
 
     // The instruction should refer to tools without surrounding single quotes
     expect(instruction).not.toContain("'list_services'");
@@ -23,7 +23,7 @@ describe('Agent system instructions cleanup', () => {
   });
 
   it('should explicitly instruct the agent to confirm booking details and not auto-book unavailable/unconfirmed slots', () => {
-    const instruction = (rootAgent.instruction as string).toLowerCase();
+    const instruction = (appointmentAgent.instruction as string).toLowerCase();
 
     // Check for explicit confirmation requirement
     expect(instruction).toContain('explicit confirmation');
@@ -35,7 +35,7 @@ describe('Agent system instructions cleanup', () => {
   });
 
   it('should instruct the agent on the rescheduling verification and search constraints', () => {
-    const instruction = (rootAgent.instruction as string).toLowerCase();
+    const instruction = (appointmentAgent.instruction as string).toLowerCase();
 
     // Check that rescheduling instructions are present and mirror cancellation rules
     expect(instruction).toContain('reschedule');

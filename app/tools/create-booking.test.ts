@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { createBooking } from './create-booking.js';
 import { clearDatabase } from '../scheduler.js';
 import { setTestConfig } from '../config/business-config.js';
@@ -7,10 +7,13 @@ import { business2Config } from '../config/business_2.js';
 
 describe('createBooking tool', () => {
   beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-07-01T10:00:00'));
     clearDatabase();
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     setTestConfig(business1Config);
   });
 

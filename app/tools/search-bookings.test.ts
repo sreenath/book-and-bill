@@ -1,11 +1,17 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { searchBookings } from './search-bookings.js';
 import { createBooking } from './create-booking.js';
 import { clearDatabase } from '../scheduler.js';
 
 describe('searchBookings tool', () => {
   beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-07-01T10:00:00'));
     clearDatabase();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('should find bookings', async () => {

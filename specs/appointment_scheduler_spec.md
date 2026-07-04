@@ -54,9 +54,17 @@ The Appointment Scheduler is an AI-powered appointment management system designe
 │       ├── search-bookings.ts     # tool: search_appointments
 │       ├── search-bookings.test.ts
 │       ├── get-current-date.ts    # tool: get_current_date
-│       └── get-current-date.test.ts
+│       ├── get-current-date.test.ts
+│       ├── create-invoice.ts      # tool: create_invoice
+│       ├── create-invoice.test.ts
+│       ├── create-quote.ts        # tool: create_quote
+│       ├── create-quote.test.ts
+│       ├── generate-pdf.ts        # tool: generate_pdf
+│       └── generate-pdf.test.ts
 ├── data/
-│   └── appointments_${businessId}.json # Dynamic file-based JSON database (created at runtime)
+│   ├── appointments_${businessId}.json # Dynamic file-based JSON database (created at runtime)
+│   ├── invoices_${businessId}.json    # Dynamic file-based JSON invoice database
+│   └── quotes_${businessId}.json      # Dynamic file-based JSON quote database
 ├── specs/
 │   └── appointment_scheduler_spec.md # This project specification file
 └── tests/
@@ -93,6 +101,29 @@ The Appointment Scheduler is an AI-powered appointment management system designe
   - `time`: string (Format: `HH:MM`)
   - `durationMinutes`: number
 
+- **Invoice**:
+  - `id`: string (Format: `INV-XXXX` where `XXXX` is a random 4-digit number)
+  - `appointmentId`: string
+  - `customerName`: string
+  - `customerPhone`: string
+  - `serviceId`: string
+  - `serviceName`: string
+  - `price`: number
+  - `tax`: number
+  - `total`: number
+  - `date`: string
+
+- **Quote**:
+  - `id`: string (Format: `QT-XXXX` where `XXXX` is a random 4-digit number)
+  - `customerName`: string
+  - `customerPhone`: string
+  - `serviceId`: string
+  - `serviceName`: string
+  - `price`: number
+  - `tax`: number
+  - `total`: number
+  - `date`: string
+
 ---
 
 ## 5. Core Scheduling Business Rules
@@ -120,6 +151,9 @@ Each tool is constructed as a `FunctionTool` from `@google/adk`.
 | `rescheduleBooking` | `reschedule_appointment` | `appointmentId` (string), `newDate` (string), `newTime` (string) | `{ status: 'success', appointment: Appointment }` or `{ status: 'error', message: string }` |
 | `searchBookings` | `search_appointments` | Optional: `customerName`, `customerPhone`, `date`, `time` (strings) | `{ status: 'success', appointments: Appointment[] }` |
 | `getCurrentDate` | `get_current_date` | `{}` | `{ status: 'success', date: 'YYYY-MM-DD', time: 'HH:MM', dayOfWeek: string }` |
+| `createInvoice` | `create_invoice` | `appointmentId` (string) | `{ status: 'success', invoice: Invoice }` or `{ status: 'error', message: string }` |
+| `createQuote` | `create_quote` | `customerName` (string), `customerPhone` (string), `serviceId` (string) | `{ status: 'success', quote: Quote }` or `{ status: 'error', message: string }` |
+| `generatePdf` | `generate_pdf` | Optional: `invoiceId` (string), `quoteId` (string) | `{ status: 'success', message: string, filePath: string }` or `{ status: 'error', message: string }` |
 
 ---
 
@@ -135,16 +169,34 @@ The agent is configured as an `LlmAgent`. Rather than using a hardcoded model, i
 - Requests mapping from Gemini's `LlmRequest` structures to OpenAI-compatible chat completion payload formats (remapping roles, prepending `systemInstruction` as a system message, mapping tools to OpenAI tool objects, and lower-casing Zod/JSON schema parameter type strings).
 - Responses mapping from OpenAI-compatible JSON responses back to ADK `LlmResponse` structures (converting message content, finish reasons, and mapping tool calls/responses sequentially using unique `tool_call_id` markers).
 
-### Conversational Guidelines
-Its system instructions are:
-1. When asked for services or stylists, use the list_services tool or the list_stylists tool to provide styling details.
-2. Before booking, rescheduling, or checking slots, verify service, stylist, date, and/or time are known. If stylist is omitted, check stylist specialty matches the service before recommending or listing them. Use the check_availability tool to see if a slot is open before booking/rescheduling.
-3. To book an appointment, gather customer name, phone number, service ID, stylist ID, date (YYYY-MM-DD), and time (HH:MM). You MUST check slot availability using the check_availability tool before booking. If the requested time slot is available: Summarize all appointment details (Customer Name, Service, Stylist, Date, and Time) back to the user, and ask the user for explicit confirmation to book. DO NOT invoke the book_appointment tool until the user has explicitly confirmed these details. If the requested time slot is NOT available: DO NOT book the appointment, and DO NOT call the book_appointment tool. Instead, suggest alternative available times on that day and ask the user to choose or confirm one first.
-4. To cancel an appointment, ask for the customer's full name, phone number, and the date and time of the appointment. ONLY search for an existing appointment (i.e. by calling the search_appointments tool) if the user has provided at least the customer's full name, phone number, and the date of the appointment. If the user has not provided at least these three details, DO NOT perform the search, and instead inform the user that all four details (full name, phone number, date, and time) are required to proceed. When calling the search_appointments tool, use the provided details (customerName, customerPhone, date, and optionally time). For optional parameters, if the value is not available, do not pass that parameter when calling. Verify that the details provided match the retrieved booking record. If no booking is found or if the details do not match, inform the user and do not cancel. If a match is found, summarize the appointment details and ask the user for explicit confirmation before canceling. Only call the cancel_appointment tool with the corresponding appointment ID after the user has explicitly confirmed.
-5. To reschedule an appointment, ask for the customer's full name, phone number, and the date and time of the appointment. ONLY search for an existing appointment (i.e. by calling the search_appointments tool) if the user has provided at least the customer's full name, phone number, and the date of the appointment. If the user has not provided at least these three details, DO NOT perform the search, and instead inform the user that all four details (full name, phone number, date, and time) are required to proceed. When calling the search_appointments tool, use the provided details (customerName, customerPhone, date, and optionally time). For optional parameters, if the value is not available, do not pass that parameter when calling. Verify that the details provided match the retrieved booking record. If no booking is found or if the details do not match, inform the user and do not reschedule. If a match is found, verify the new date and time requested, and check slot availability using the check_availability tool before rescheduling. Summarize the appointment details and ask the user for explicit confirmation before rescheduling. Only call the reschedule_appointment tool with the corresponding appointment ID after the user has explicitly confirmed.
-6. Confirm details with the user clearly once a booking, cancellation, or rescheduling is complete.
-7. If a slot is taken or unavailable during booking or rescheduling, DO NOT book or reschedule the appointment automatically, and DO NOT call the book_appointment or reschedule_appointment tool for an alternative slot. Instead, suggest alternative available times on that day and ask the user to choose or confirm one first.
-8. If the user mentions relative dates (like 'tomorrow', 'next Tuesday', '5 days from now') or when today's date is needed, use the get_current_date tool to obtain the current date and calculate the target date.
+### Multi-Agent Architecture
+The conversational assistant is structured as a multi-agent system consisting of:
+1. **Root Orchestrator Agent (`appointment_scheduler_agent`)**: Greet the user, understand their high-level intent, and route/transfer control to the specialized sub-agents.
+2. **Appointment Agent (`appointment_agent`)**: Specialized sub-agent that handles all appointment scheduling tasks.
+3. **Invoice/Quote Agent (`invoice_quote_agent`)**: Specialized sub-agent that handles invoicing, price quotes, and PDF downloads.
+
+### Conversational Guidelines by Agent
+
+#### 1. Root Orchestrator Agent (`appointment_scheduler_agent`)
+- **Greeting**: Always greet the user with the configured initial greeting: `${ACTIVE_CONFIG.welcomeMessage}`.
+- **Routing**:
+  - If user wants to check slot availability, book, reschedule, or cancel bookings, delegate to the `appointment_agent`.
+  - If user wants to create an invoice, get a price quote, or generate a PDF of their invoice or quote, delegate to the `invoice_quote_agent`.
+  - If the intent is unclear, ask clarifying questions.
+
+#### 2. Appointment Agent (`appointment_agent`)
+- **Services/Stylists**: Use `list_services` or `list_stylists` to show available services and stylists.
+- **Pre-checks**: Verify service, stylist, date, and/or time before slot checks or booking. Check specialties if stylist isn't specified.
+- **Booking**: Gather customer name, phone, service ID, stylist ID, date (YYYY-MM-DD), and time (HH:MM). Check availability using `check_availability` first. If available, summarize details and get explicit user confirmation before calling `book_appointment`. If unavailable, suggest alternative slots.
+- **Cancellation**: Gather name, phone, date, and time. Must search using `search_appointments` (requires name, phone, date). Verify retrieved booking matches user details. Ask for explicit user confirmation before calling `cancel_appointment`.
+- **Rescheduling**: Same search/verification guidelines as cancellation. Then verify new date/time availability and request explicit user confirmation before calling `reschedule_appointment`.
+- **Dates**: Use `get_current_date` to calculate relative dates.
+
+#### 3. Invoice/Quote Agent (`invoice_quote_agent`)
+- **Invoices**: Create using `create_invoice` (requires appointment ID). If the appointment ID is missing, search for the appointment using `search_appointments` (requires customer name, phone, and appointment date).
+- **Quotes**: Create using `create_quote` (requires customer name, phone, and service ID).
+- **PDF Generation**: After creating an invoice or quote, call `generate_pdf` to generate the PDF file and return the absolute/file URL path so the user can download it.
+- **Cross-Agent Hand-off**: If the user asks about bookings, availability, or stylists, hand control back to the `appointment_agent`.
 
 ---
 
