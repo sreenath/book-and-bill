@@ -9,19 +9,22 @@ This project is organized as follows:
 
 ```
 book-and-bill/
+├── .agents/             # Behavioral rules for the AI pair-programmer
 ├── app/                 # Core application code
-│   └── agent.ts         # Main agent logic with tools
-├── .cloudbuild/         # CI/CD pipeline configurations for Google Cloud Build
-├── deployment/          # Infrastructure and deployment scripts
-├── tests/               # Unit, integration, and load tests
-│   ├── unit/            # Unit tests
-│   ├── integration/     # Integration tests
-│   └── load_test/       # Load tests
-├── Makefile             # Makefile for common commands
-├── GEMINI.md            # AI-assisted development guide
-├── package.json         # Project dependencies and configuration
-├── tsconfig.json        # TypeScript configuration
-└── vitest.config.ts     # Vitest test configuration
+│   ├── agent.ts         # Main orchestrator, multi-agent setup, and guidelines
+│   ├── scheduler.ts     # Database helpers (appointments, invoices, quotes)
+│   ├── model-factory.ts # Dynamic model selection factory (Gemini, Groq, OpenAI)
+│   ├── config/          # Multi-tenant business configs & scheduling validation
+│   ├── models/          # Custom connection adapters (OpenAI, Groq)
+│   └── tools/           # Custom FunctionTools (booking, cancellation, billing, PDF generation)
+├── data/                # File-based database stores (appointments, invoices, quotes)
+├── deployment/          # Terraform infrastructure configurations
+├── specs/               # Project specification documentation
+├── tests/               # Integration tests
+├── Makefile             # Automation commands (build, run, deploy, test)
+├── README.md            # Main project documentation
+├── package.json         # Project configuration and dependencies
+└── vitest.config.ts     # Unit testing configuration
 ```
 
 > 💡 **Tip:** Use [Gemini CLI](https://github.com/google-gemini/gemini-cli) for AI-assisted development - project context is pre-configured in `GEMINI.md`.
@@ -44,16 +47,11 @@ Before you begin, ensure you have:
 cp .env.example .env
 ```
 
-2. Edit `.env` with your configuration:
+2. Edit `.env` with your configuration. Refer to [.env.example](file:///c:/PythonProjects/appointment-scheduler/.env.example) for all available options:
 
 ```bash
-# For Vertex AI (recommended):
-GOOGLE_GENAI_USE_VERTEXAI=true
-GOOGLE_CLOUD_PROJECT=your-gcp-project-id
-GOOGLE_CLOUD_LOCATION=global
-
-# Or for Gemini API:
-# GEMINI_API_KEY=your-api-key
+# Example: Using the Gemini API
+GEMINI_API_KEY=your-gemini-api-key
 ```
 
 3. Install and launch:
@@ -62,6 +60,18 @@ GOOGLE_CLOUD_LOCATION=global
 make install && make playground
 ```
 > **📊 Observability Note:** Agent telemetry (Cloud Trace) is always enabled. Prompt-response logging (GCS, BigQuery, Cloud Logging) is **disabled** locally, **enabled by default** in deployed environments (metadata only - no prompts/responses). See [Monitoring and Observability](#monitoring-and-observability) for details.
+
+## LLM Configuration & Dynamic Switching
+
+Book&Bill supports multiple LLM providers dynamically at startup based on the presence of API keys in the environment. The dynamic model selection factory (`app/model-factory.ts`) resolves the model to use in the following order of precedence:
+
+1. **Gemini** (Recommended): Triggered if `GEMINI_API_KEY` or `GOOGLE_GENAI_API_KEY` is present.
+   - Configure the model version with `GEMINI_MODEL` (default: `gemini-2.5-flash`).
+2. **Groq**: Triggered if `GROQ_API_KEY` is present (and Gemini keys are absent).
+   - Configure the model version with `GROQ_MODEL` (default: `llama-3.3-70b-versatile`). A custom adapter (`app/models/groq.ts`) translates ADK types to and from the Groq API.
+3. **OpenAI**: Triggered if `OPENAI_API_KEY` is present (and Gemini/Groq keys are absent).
+   - Configure the model version with `OPENAI_MODEL` (default: `gpt-4o-mini`). A custom adapter (`app/models/openai.ts`) translates ADK types to and from the OpenAI API.
+4. **Ollama**: Triggered if `OLLAMA_MODEL` is set (with `OLLAMA_API_URL` pointing to the local runner). Uses the OpenAI client adapter to talk to the local service.
 
 ## Commands
 
