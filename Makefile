@@ -29,7 +29,7 @@ local-backend:
 
 # Run agent with CLI
 run:
-	npm run run
+	npm run cli
 
 # ==============================================================================
 # Backend Deployment Targets

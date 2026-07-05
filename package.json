@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc && npx @google/adk-devtools web -h localhost dist/agent.js",
-    "run": "tsc && npx @google/adk-devtools run dist/agent.js",
+    "cli": "tsc && npx @google/adk-devtools run dist/agent.js --log_level warn",
     "test": "vitest run",
     "test:unit": "vitest run app",
     "test:integration": "vitest run tests",
