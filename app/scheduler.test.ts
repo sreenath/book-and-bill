@@ -10,8 +10,9 @@ import { bookAppointment } from './tools/create-booking.js';
 import { cancelAppointment } from './tools/cancel-booking.js';
 import { rescheduleAppointment } from './tools/reschedule-booking.js';
 import { findAppointments } from './tools/search-bookings.js';
+import { business1Config } from './config/business_1.js';
 
-describe('Saloon Scheduler Unit Tests', () => {
+describe('Salon Scheduler Unit Tests', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-07-01T10:00:00'));
@@ -25,6 +26,13 @@ describe('Saloon Scheduler Unit Tests', () => {
   it('should list services and stylists correctly', () => {
     expect(SERVICES.length).toBe(5);
     expect(STYLISTS.length).toBe(3);
+  });
+
+  it('should have the correct business name spelling with Salon', () => {
+    expect(business1Config.name).toContain('Salon');
+    expect(business1Config.name).not.toContain('Saloon');
+    expect(business1Config.welcomeMessage).toContain('Salon');
+    expect(business1Config.welcomeMessage).not.toContain('Saloon');
   });
 
   it('should return all available slots when no bookings exist', () => {

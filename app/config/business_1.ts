@@ -2,8 +2,8 @@ import { BusinessConfig } from './types.js';
 
 export const business1Config: BusinessConfig = {
   id: 'business_1',
-  name: 'Tony & Guy Saloon',
-  welcomeMessage: 'Welcome to Tony & Guy Saloon',
+  name: 'Tony & Guy Salon',
+  welcomeMessage: 'Welcome to Tony & Guy Salon',
   bookingWindowMonths: 1,
   operatingDays: [0, 1, 2, 3, 4, 5, 6], // All days
   operatingDaysDescription: 'all days (Sunday to Saturday)',

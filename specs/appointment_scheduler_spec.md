@@ -29,7 +29,7 @@ Book&Bill is an AI-powered appointment management and billing system designed fo
 │   ├── scheduler.test.ts          # Colocated unit test for database & domain helpers
 │   ├── config/                    # Business configurations and validation helpers
 │   │   ├── types.ts               # Configuration type interfaces
-│   │   ├── business_1.ts          # Business 1 (Tony & Guy Saloon) config
+│   │   ├── business_1.ts          # Business 1 (Tony & Guy Salon) config
 │   │   ├── business_2.ts          # Business 2 (Ray's SPA) config
 │   │   ├── business-config.ts     # Dynamic config loader & test mock helper
 │   │   ├── validation.ts          # Date and operating day validations
@@ -211,9 +211,9 @@ The conversational assistant is structured as a multi-agent system consisting of
 The system supports multiple salon business configurations dynamically resolved via the `BUSINESS_ID` environment variable (defaults to `business_1`).
 
 ### Business Profiles
-1. **Business 1 (Tony & Guy Saloon)**
-   - Name: `Tony & Guy Saloon`
-   - Initial greeting: `"Welcome to Tony & Guy Saloon"`
+1. **Business 1 (Tony & Guy Salon)**
+   - Name: `Tony & Guy Salon`
+   - Initial greeting: `"Welcome to Tony & Guy Salon"`
    - Booking Window: `1 month`
    - Operating Days: `All days` (Sunday - Saturday)
    - Services & Stylists: Default catalog (haircut, coloring, manicure, pedicure, facial; Alice, Bob, Charlie)
