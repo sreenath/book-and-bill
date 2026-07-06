@@ -61,6 +61,15 @@ describe('Agent system instructions cleanup', () => {
     expect(instruction).toContain('confirm');
     expect(instruction).toContain('not in the past');
   });
+
+  it('should instruct the agent to be highly concise and omit unnecessary service/stylist options', () => {
+    const instruction = (appointmentAgent.instruction as string).toLowerCase();
+
+    expect(instruction).toContain('concise');
+    expect(instruction).toContain('explain');
+    expect(instruction).toContain('internal validation');
+    expect(instruction).toContain('only');
+  });
 });
 
 describe('Agent session greeting', () => {

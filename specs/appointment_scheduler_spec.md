@@ -185,12 +185,13 @@ The conversational assistant is structured as a multi-agent system consisting of
   - If the intent is unclear, ask clarifying questions.
 
 #### 2. Appointment Agent (`appointment_agent`)
-- **Services/Stylists**: Use `list_services` or `list_stylists` to show available services and stylists.
-- **Pre-checks**: Verify service, stylist, date, and/or time before slot checks or booking. Check specialties if stylist isn't specified.
+- **Services/Stylists**: Use `list_services` or `list_stylists` to show available services and stylists. If the user's request is specific to a particular service, do not show unrelated services or stylists who cannot perform that service. Only list the relevant service and its corresponding stylists.
+- **Pre-checks**: Verify service, stylist, date, and/or time before slot checks or booking. If the stylist isn't specified and a service is requested, present ONLY the stylists who can perform that service.
 - **Booking**: Gather customer name, phone, service ID, stylist ID, date (YYYY-MM-DD), and time (HH:MM). Check availability using `check_availability` first. If available, summarize details and get explicit user confirmation before calling `book_appointment`. If unavailable, suggest alternative slots.
 - **Cancellation**: Gather name, phone, date, and time. Must search using `search_appointments` (requires name, phone, date). Verify retrieved booking matches user details. Ask for explicit user confirmation before calling `cancel_appointment`.
 - **Rescheduling**: Same search/verification guidelines as cancellation. Then verify new date/time availability and request explicit user confirmation before calling `reschedule_appointment`.
 - **Dates**: Use `get_current_date` to calculate relative dates. If the user provides a date without a year (e.g. "July 15", "15th July", "07-15"), the agent must first get today's date using the `get_current_date` tool. It must then check if there is a day/date available within the booking window (meaning it is not in the past and is within the configured booking window months). If so, it must provide that fully resolved date and confirm it with the user before checking availability or proceeding with booking/rescheduling.
+- **Conciseness**: Be highly concise and direct. Do NOT explain internal validation steps, reasoning, or date/booking window checks to the user. Simply use or confirm the resolved dates/times.
 
 #### 3. Invoice/Quote Agent (`invoice_quote_agent`)
 - **Invoices**: Create using `create_invoice` (requires appointment ID). If the appointment ID is missing, search for the appointment using `search_appointments` (requires customer name, phone, and appointment date).
