@@ -21,7 +21,7 @@ book-and-bill/
 ├── deployment/          # Terraform infrastructure configurations
 ├── specs/               # Project specification documentation
 ├── tests/               # Integration tests
-├── Makefile             # Automation commands (build, run, deploy, test)
+├── Makefile             # Automation commands (alternative to npm scripts)
 ├── README.md            # Main project documentation
 ├── package.json         # Project configuration and dependencies
 └── vitest.config.ts     # Unit testing configuration
@@ -36,7 +36,6 @@ Before you begin, ensure you have:
 - **npm**: Node package manager (comes with Node.js) - add packages with `npm install <package>`
 - **Google Cloud SDK**: For GCP services - [Install](https://cloud.google.com/sdk/docs/install)
 - **Terraform**: For infrastructure deployment - [Install](https://developer.hashicorp.com/terraform/downloads)
-- **make**: Build automation tool - [Install](https://www.gnu.org/software/make/) (pre-installed on most Unix-based systems)
 
 
 ## Quick Start (Local Testing)
@@ -57,8 +56,21 @@ GEMINI_API_KEY=your-gemini-api-key
 3. Install and launch:
 
 ```bash
-make install && make playground
+npm install && npm run dev
 ```
+
+### Integration with Agent Host App
+
+If you want to run this agent along with the [agent-host-app](https://github.com/sreenath/agent-host-app), start the local API server with allowed CORS origins:
+
+```bash
+# Build the agent
+npm run build
+
+# Start the API server allowing origins from the host app
+npx @google/adk-devtools api_server -h localhost --port 8000 --allow_origins "*" dist/book_and_bill_agent.js
+```
+
 > **📊 Observability Note:** Agent telemetry (Cloud Trace) is always enabled. Prompt-response logging (GCS, BigQuery, Cloud Logging) is **disabled** locally, **enabled by default** in deployed environments (metadata only - no prompts/responses). See [Monitoring and Observability](#monitoring-and-observability) for details.
 
 ## LLM Configuration & Dynamic Switching
@@ -75,20 +87,19 @@ Book&Bill supports multiple LLM providers dynamically at startup based on the pr
 
 ## Commands
 
-| Command              | Description                                                                                 |
-| -------------------- | ------------------------------------------------------------------------------------------- |
-| `make install`       | Install all required dependencies using npm                                                 |
-| `make playground`    | Launch local development environment with backend and frontend - leveraging ADK devtools   |
-| `make deploy`        | Deploy agent to Cloud Run (use `IAP=true` to enable Identity-Aware Proxy, `PORT=8080` to specify container port) |
-| `make local-backend` | Launch local development server                                                             |
-| `make test`          | Run unit and integration tests using vitest                                                 |
-| `make lint`          | Run code quality checks using eslint                                                        |
-| `make build`         | Build TypeScript to JavaScript                                                              |
-| `make typecheck`     | Run TypeScript type checking                                                                |
-| `make clean`         | Remove build artifacts (dist, node_modules)                                                 |
-| `make setup-dev-env` | Set up development environment resources using Terraform                                    |
+The project provides npm scripts for common tasks:
 
-For full command options and usage, refer to the [Makefile](Makefile).
+| Command             | Description                                                                                 |
+| ------------------- | ------------------------------------------------------------------------------------------- |
+| `npm install`       | Install all required dependencies                                                           |
+| `npm run dev`       | Launch local development environment (playground) with backend and frontend                 |
+| `npm run build`     | Build TypeScript to JavaScript                                                              |
+| `npm run test`      | Run all unit and integration tests using vitest                                             |
+| `npm run test:unit` | Run unit tests only                                                                         |
+| `npm run lint`      | Run code quality checks using eslint                                                        |
+| `npm run typecheck` | Run TypeScript type checking                                                                |
+
+Alternatively, refer to the [Makefile](Makefile) for automation commands.
 
 
 ## Usage
@@ -96,7 +107,7 @@ For full command options and usage, refer to the [Makefile](Makefile).
 This template follows a "bring your own agent" approach - you focus on your business logic, and the template handles everything else (UI, infrastructure, deployment, monitoring).
 1. **Prototype:** Build your Generative AI Agent using the intro notebooks in `notebooks/` for guidance. Use Vertex AI Evaluation to assess performance.
 2. **Integrate:** Import your agent into the app by editing `app/agent.ts`. Add tools using `FunctionTool` with Zod schemas for parameter validation.
-3. **Test:** Explore your agent functionality using the local playground with `make playground`. The playground automatically reloads your agent on code changes.
+3. **Test:** Explore your agent functionality using the local playground with `npm run dev`. The playground automatically reloads your agent on code changes.
 4. **Deploy:** Set up and initiate the CI/CD pipelines, customizing tests as necessary. Refer to the [deployment section](#deployment) for comprehensive instructions. For streamlined infrastructure deployment, simply run `uvx google-agents-cli infra cicd`. Currently supports GitHub with both Google Cloud Build and GitHub Actions as CI/CD runners.
 5. **Monitor:** Track performance and gather insights using BigQuery telemetry data, Cloud Logging, and Cloud Trace to iterate on your application.
 
@@ -113,7 +124,19 @@ You can test deployment towards a Dev Environment using the following command:
 
 ```bash
 gcloud config set project <your-dev-project-id>
-make deploy
+
+# Build the project
+npm run build
+
+# Deploy to Cloud Run
+gcloud beta run deploy book-and-bill \
+  --source . \
+  --memory "4Gi" \
+  --region "us-east1" \
+  --no-allow-unauthenticated \
+  --no-cpu-throttling \
+  --labels "created-by=adk" \
+  --update-env-vars "GOOGLE_GENAI_USE_VERTEXAI=true,GOOGLE_CLOUD_LOCATION=global"
 ```
 
 
@@ -137,7 +160,7 @@ The application provides two levels of observability:
 
 | Environment | Prompt-Response Logging |
 |-------------|-------------------------|
-| **Local Development** (`make playground`) | ❌ Disabled by default |
+| **Local Development** (`npm run dev`) | ❌ Disabled by default |
 | **Deployed Environments** (via Terraform) | ✅ **Enabled by default** (privacy-preserving: metadata only, no prompts/responses) |
 
 **To enable locally:** Set `LOGS_BUCKET_NAME` and `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=NO_CONTENT`.

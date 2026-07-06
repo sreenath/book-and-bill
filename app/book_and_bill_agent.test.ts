@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { rootAgent, appointmentAgent } from './book_and_bill_agent.js';
+import { rootAgent, appointmentAgent, invoiceQuoteAgent } from './book_and_bill_agent.js';
 
 describe('Agent system instructions cleanup', () => {
   it('should not contain single quotes around tool names to prevent parser/model confusion', () => {
@@ -69,6 +69,22 @@ describe('Agent system instructions cleanup', () => {
     expect(instruction).toContain('explain');
     expect(instruction).toContain('internal validation');
     expect(instruction).toContain('only');
+  });
+
+  it('should instruct the agent to strictly follow security and privacy rules for appointment lookups', () => {
+    const appointmentInstruction = (appointmentAgent.instruction as string).toLowerCase();
+    const invoiceInstruction = (invoiceQuoteAgent.instruction as string).toLowerCase();
+
+    // Check appointment specialist instructions
+    expect(appointmentInstruction).toContain('security');
+    expect(appointmentInstruction).toContain('privacy');
+    expect(appointmentInstruction).toContain('never disclose');
+    expect(appointmentInstruction).toContain('trick');
+    expect(appointmentInstruction).toContain('full name, phone number, and the date');
+
+    // Check invoice/quote specialist instructions
+    expect(invoiceInstruction).toContain('never disclose');
+    expect(invoiceInstruction).toContain('full name, phone number, and appointment date');
   });
 });
 

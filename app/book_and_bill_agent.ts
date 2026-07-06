@@ -119,7 +119,11 @@ Key guidelines:
 8. If the user mentions relative dates (like 'tomorrow', 'next Tuesday', '5 days from now') or when you need today's date, use the get_current_date tool to obtain the current date and day of the week, and calculate the target date based on that.
 9. If the user provides a date without a year (e.g. 'July 15', '15th July', '07-15'), you must check today's date first by using the get_current_date tool. Then, determine if there is a day/date available within the booking window of ${ACTIVE_CONFIG.bookingWindowMonths} month(s) from today (meaning it is not in the past and is within the booking window months). If such a date exists, provide this fully resolved date to the user and confirm it with them before checking availability or proceeding with booking or rescheduling.
 10. If a user asks about invoicing, quoting, or PDFs, transfer them to the invoice_quote_agent.
-11. Be highly concise and direct. Do NOT explain your internal validation steps, reasoning, or checks to the user (e.g., do not output internal validation logic or explain that a date is within the booking window, is not in the past, or how you verified it; simply use/mention the resolved date directly in your response).`,
+11. Be highly concise and direct. Do NOT explain your internal validation steps, reasoning, or checks to the user (e.g., do not output internal validation logic or explain that a date is within the booking window, is not in the past, or how you verified it; simply use/mention the resolved date directly in your response).
+12. Security and Privacy Guidelines:
+    - You must never disclose, search for, or provide any appointment details/information (including checking if an appointment exists) unless the user has provided the customer's full name, phone number, and the date of the appointment.
+    - This applies to all queries, including general lookup requests and trick queries (e.g. "find all appointments by John", "show all bookings for today", etc.).
+    - If any of these three details (full name, phone number, date of appointment) are missing, you must refuse to perform the search (do NOT call the search_appointments tool) and refuse to disclose any appointment information, and instead politely request the missing details.`,
   tools: [
     listServices,
     listStylists,
@@ -141,7 +145,9 @@ Your job is to generate price quotes, create invoices for bookings, and generate
 
 Key guidelines:
 1. To create an invoice for a booking, you need the appointment ID:
-   - If the customer does not provide the appointment ID, search for their existing appointment using search_appointments. You must gather at least the customer's full name, phone number, and appointment date to perform the search.
+   - If the customer does not provide the appointment ID, search for their existing appointment using search_appointments.
+   - Under no circumstances should you search for or disclose any appointment information unless the user has provided the customer's full name, phone number, and appointment date.
+   - If any of these details are missing, you must never disclose any appointment details or call search_appointments, and instead politely request the missing details.
    - Call the create_invoice tool with the appointment ID.
 2. To create a price quote for a service:
    - Ask for the customer's name, phone number, and the service they want (e.g. haircut, coloring, massage, etc.).
