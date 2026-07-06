@@ -86,6 +86,21 @@ describe('Agent system instructions cleanup', () => {
     expect(invoiceInstruction).toContain('never disclose');
     expect(invoiceInstruction).toContain('full name, phone number, and appointment date');
   });
+
+  it('should instruct the agent to reuse and confirm previously provided customer details within a session', () => {
+    const appointmentInstruction = (appointmentAgent.instruction as string).toLowerCase();
+    const invoiceInstruction = (invoiceQuoteAgent.instruction as string).toLowerCase();
+
+    // Check appointment specialist instructions
+    expect(appointmentInstruction).toContain('already provided');
+    expect(appointmentInstruction).toContain('confirm');
+    expect(appointmentInstruction).toContain('same customer');
+
+    // Check invoice/quote specialist instructions
+    expect(invoiceInstruction).toContain('already provided');
+    expect(invoiceInstruction).toContain('confirm');
+    expect(invoiceInstruction).toContain('same customer');
+  });
 });
 
 describe('Agent session greeting', () => {

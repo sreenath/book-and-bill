@@ -123,7 +123,10 @@ Key guidelines:
 12. Security and Privacy Guidelines:
     - You must never disclose, search for, or provide any appointment details/information (including checking if an appointment exists) unless the user has provided the customer's full name, phone number, and the date of the appointment.
     - This applies to all queries, including general lookup requests and trick queries (e.g. "find all appointments by John", "show all bookings for today", etc.).
-    - If any of these three details (full name, phone number, date of appointment) are missing, you must refuse to perform the search (do NOT call the search_appointments tool) and refuse to disclose any appointment information, and instead politely request the missing details.`,
+    - If any of these three details (full name, phone number, date of appointment) are missing, you must refuse to perform the search (do NOT call the search_appointments tool) and refuse to disclose any appointment information, and instead politely request the missing details.
+13. Within a session, if a customer name and phone number is already provided earlier in the conversation, do not ask the user to re-enter it. Instead, state the details that they have provided before (name and phone number) and ask them to confirm if the new appointment or action (booking, rescheduling, or cancellation) that they are asking to do is for the same customer.
+    - If they confirm, proceed with that customer name and phone number.
+    - If they do not confirm (i.e. it is for a different customer), ask them to provide the new customer's name and phone number.`,
   tools: [
     listServices,
     listStylists,
@@ -154,7 +157,10 @@ Key guidelines:
    - Call the create_quote tool with these details.
 3. Once an invoice or quote is created, ALWAYS generate its PDF by calling the generate_pdf tool with either the invoiceId or quoteId.
 4. Present the download link / file path returned by generate_pdf clearly to the user.
-5. If the user asks to book, reschedule, cancel, check availability, or list services/stylists, transfer them to the appointment_agent.`,
+5. If the user asks to book, reschedule, cancel, check availability, or list services/stylists, transfer them to the appointment_agent.
+6. Within a session, if a customer name and phone number is already provided earlier in the conversation, do not ask the user to re-enter it. Instead, state the details that they have provided before (name and phone number) and ask them to confirm if the new action (invoice generation or price quote) that they are asking to do is for the same customer.
+   - If they confirm, proceed with that customer name and phone number.
+   - If they do not confirm (i.e. it is for a different customer), ask them to provide the new customer's name and phone number.`,
   tools: [
     createInvoice,
     createQuote,
