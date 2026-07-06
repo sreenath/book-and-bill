@@ -59,7 +59,7 @@ describe.runIf(hasApiKey)('Server E2E', () => {
   beforeAll(async () => {
     // Pass agent.ts directly to avoid bundling test dependencies
     const npxCmd = process.platform === 'win32' ? 'npx.cmd' : 'npx';
-    serverProcess = spawn(npxCmd, ['@google/adk-devtools', 'api_server', 'app/agent.ts', '--port', '8000'], {
+    serverProcess = spawn(npxCmd, ['@google/adk-devtools', 'api_server', 'app/book_and_bill_agent.ts', '--port', '8000'], {
       cwd: rootDir,
       env: { ...process.env, ...dotenvVars },
       stdio: 'pipe',
@@ -90,9 +90,9 @@ describe.runIf(hasApiKey)('Server E2E', () => {
   });
 
   it('should create a session', async () => {
-    // App name is "agent" (filename without extension)
+    // App name is "book_and_bill_agent" (filename without extension)
     const response = await fetch(
-      `${baseUrl}/apps/agent/users/u_123/sessions/${testSessionId}`,
+      `${baseUrl}/apps/book_and_bill_agent/users/u_123/sessions/${testSessionId}`,
       { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }
     );
     if (!response.ok) {
@@ -106,7 +106,7 @@ describe.runIf(hasApiKey)('Server E2E', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        appName: 'agent',
+        appName: 'book_and_bill_agent',
         userId: 'u_123',
         sessionId: testSessionId,
         newMessage: {

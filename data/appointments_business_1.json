@@ -18,5 +18,15 @@
     "date": "2026-07-07",
     "time": "12:00",
     "durationMinutes": 30
+  },
+  {
+    "id": "APT-8755",
+    "customerName": "Joseph Panicker",
+    "customerPhone": "0453456789",
+    "serviceId": "pedicure",
+    "stylistId": "charlie",
+    "date": "2026-07-10",
+    "time": "11:00",
+    "durationMinutes": 45
   }
 ]

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { rootAgent, appointmentAgent } from './agent.js';
+import { rootAgent, appointmentAgent } from './book_and_bill_agent.js';
 
 describe('Agent system instructions cleanup', () => {
   it('should not contain single quotes around tool names to prevent parser/model confusion', () => {

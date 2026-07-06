@@ -3,7 +3,7 @@ config();
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Runner, InMemorySessionService, getFunctionCalls } from '@google/adk';
-import { rootAgent } from '../../app/agent.js';
+import { rootAgent } from '../../app/book_and_bill_agent.js';
 
 const hasApiKey = !!(
   process.env.GEMINI_API_KEY ||
@@ -17,7 +17,13 @@ const hasApiKey = !!(
 function hasQuotaError(events: any[]): boolean {
   return events.some(
     e => e.errorCode === '429' ||
-         (e.errorMessage && (e.errorMessage.includes('Quota exceeded') || e.errorMessage.includes('quota')))
+         e.errorCode === 'HTTP_429' ||
+         (e.errorMessage && (
+           e.errorMessage.includes('Quota exceeded') || 
+           e.errorMessage.includes('quota') || 
+           e.errorMessage.includes('Too Many Requests') ||
+           e.errorMessage.includes('rate limit')
+         ))
   );
 }
 
@@ -62,8 +68,8 @@ describe.runIf(hasApiKey)('Agent Integration', () => {
 
     // We expect some content returned
     const textOutput = events
-      .filter(e => e.type === 'text')
-      .map(e => e.text)
+      .map(e => e.content?.parts?.map((p: any) => p.text || '').join('') || '')
+      .filter(Boolean)
       .join(' ');
 
     // It should talk about haircuts or manicure or pedicure etc.
@@ -97,8 +103,8 @@ describe.runIf(hasApiKey)('Agent Integration', () => {
     }
 
     const textOutput = events
-      .filter(e => e.type === 'text')
-      .map(e => e.text)
+      .map(e => e.content?.parts?.map((p: any) => p.text || '').join('') || '')
+      .filter(Boolean)
       .join(' ');
 
     expect(textOutput.toLowerCase()).toMatch(/alice|bob|charlie|stylist/);
@@ -164,8 +170,8 @@ describe.runIf(hasApiKey)('Agent Integration', () => {
 
     // Verify it responds by confirming the fully resolved date
     const textOutput = events
-      .filter(e => e.type === 'text')
-      .map(e => e.text)
+      .map(e => e.content?.parts?.map((p: any) => p.text || '').join('') || '')
+      .filter(Boolean)
       .join(' ');
     expect(textOutput.toLowerCase()).toContain('2026-07-15');
     // It should ask to confirm or get confirmation
@@ -205,8 +211,8 @@ describe.runIf(hasApiKey)('Agent Integration', () => {
 
     // Verify response mentions that all four details are required
     const textOutput = events
-      .filter(e => e.type === 'text')
-      .map(e => e.text)
+      .map(e => e.content?.parts?.map((p: any) => p.text || '').join('') || '')
+      .filter(Boolean)
       .join(' ');
     expect(textOutput.toLowerCase()).toContain('required');
     expect(textOutput.toLowerCase()).toContain('four');
@@ -277,8 +283,8 @@ describe.runIf(hasApiKey)('Agent Integration', () => {
 
     // Verify response mentions that all four details are required
     const textOutput = events
-      .filter(e => e.type === 'text')
-      .map(e => e.text)
+      .map(e => e.content?.parts?.map((p: any) => p.text || '').join('') || '')
+      .filter(Boolean)
       .join(' ');
     expect(textOutput.toLowerCase()).toContain('required');
     expect(textOutput.toLowerCase()).toContain('four');
